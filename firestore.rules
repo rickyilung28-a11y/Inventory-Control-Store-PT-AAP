@@ -1,0 +1,66 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (
+          (request.auth.token.email == "rickyilung28@gmail.com" && request.auth.token.email_verified == true) ||
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superuser')
+        );
+    }
+
+    function isValidInventoryState(data) {
+      return data.keys().hasAll(['updatedAt', 'version']) &&
+             data.updatedAt is string &&
+             data.updatedAt.size() > 0 &&
+             data.updatedAt.size() <= 64 &&
+             data.version is number &&
+             data.version >= 0;
+    }
+
+    function isValidUserDoc(data) {
+      return data.keys().hasAll(['id', 'username', 'name', 'role', 'department']) &&
+             data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
+             data.username is string && data.username.size() > 0 && data.username.size() <= 64 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 128 &&
+             data.role in ['superuser', 'kepala_gudang', 'admin', 'user', 'viewer'] &&
+             data.department is string && data.department.size() <= 128;
+    }
+
+    // ===============================================================
+    // Connection Health Check
+    // ===============================================================
+    match /test/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // ===============================================================
+    // Shared Store Inventory State (/inventory_state/shared)
+    // Allows multi-device sync across Store Workstations & Scanners
+    // ===============================================================
+    match /inventory_state/{docId} {
+      allow read: if docId == 'shared';
+      allow create, update: if docId == 'shared' && isValidInventoryState(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // ===============================================================
+    // User Profiles (/users/{userId})
+    // ===============================================================
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow create, update: if isAuthenticated() && (request.auth.uid == userId || isAdmin()) && isValidUserDoc(request.resource.data);
+      allow delete: if isAdmin();
+    }
+  }
+}

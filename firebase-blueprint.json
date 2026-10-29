@@ -1,0 +1,117 @@
+{
+  "entities": {
+    "InventorySharedState": {
+      "title": "InventorySharedState",
+      "description": "Shared real-time state for PT ABADI AGROSINDO PERSADA Store Inventory Control System including stock items, LPB documents, SIV vouchers, movements, stock opname sessions, users, and company profile.",
+      "type": "object",
+      "properties": {
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp of the latest state synchronization"
+        },
+        "version": {
+          "type": "number",
+          "description": "Monotonically increasing revision counter"
+        },
+        "stockItems": {
+          "type": "array",
+          "description": "Master list of store stock items"
+        },
+        "stockCategories": {
+          "type": "array",
+          "description": "Master list of stock item categories managed by Admin"
+        },
+        "lpbDocuments": {
+          "type": "array",
+          "description": "Laporan Penerimaan Barang (LPB) documents"
+        },
+        "issueVouchers": {
+          "type": "array",
+          "description": "Store Issue Voucher (SIV / NPB) documents"
+        },
+        "stockMovements": {
+          "type": "array",
+          "description": "Stock ledger movement entries"
+        },
+        "notifications": {
+          "type": "array",
+          "description": "System workflow notifications"
+        },
+        "costCenters": {
+          "type": "array",
+          "description": "Master Cost Center list"
+        },
+        "glAccounts": {
+          "type": "array",
+          "description": "Master GL Account list"
+        },
+        "storageLocations": {
+          "type": "array",
+          "description": "Master Storage Rack Locations"
+        },
+        "companyProfile": {
+          "type": "object",
+          "description": "Company identity and branding configuration"
+        },
+        "minStockProposals": {
+          "type": "array",
+          "description": "Minimum stock change proposals"
+        },
+        "stockOpnameSessions": {
+          "type": "array",
+          "description": "Stock opname sessions and lock status"
+        },
+        "locationTransferRequests": {
+          "type": "array",
+          "description": "Storage location transfer requests"
+        },
+        "activityLogs": {
+          "type": "array",
+          "description": "Audit trail system activity logs"
+        },
+        "users": {
+          "type": "array",
+          "description": "Application user accounts and role permissions"
+        },
+        "roleDefinitions": {
+          "type": "array",
+          "description": "Role level definitions and default permissions"
+        }
+      },
+      "required": ["updatedAt", "version"]
+    },
+    "UserAccountDoc": {
+      "title": "UserAccountDoc",
+      "description": "User account record in the Store Inventory Control System.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "username": { "type": "string" },
+        "name": { "type": "string" },
+        "role": {
+          "type": "string",
+          "enum": ["superuser", "kepala_gudang", "admin", "user", "viewer"]
+        },
+        "department": { "type": "string" },
+        "email": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "username", "name", "role", "department"]
+    }
+  },
+  "firestore": {
+    "/inventory_state/{docId}": {
+      "schema": {
+        "$ref": "#/entities/InventorySharedState"
+      },
+      "description": "Shared real-time store inventory state document ('shared')"
+    },
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserAccountDoc"
+      },
+      "description": "User profile and role configuration documents"
+    }
+  }
+}

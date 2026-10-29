@@ -1,0 +1,10 @@
+{
+  "name": "Inventory Control Store PT AAP",
+  "description": "Streamlined inventory control with real-time approvals, automated issuance tracking, and instant notifications for seamless warehouse management.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

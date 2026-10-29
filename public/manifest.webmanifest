@@ -1,0 +1,32 @@
+{
+  "id": "/?mode=android",
+  "name": "SISTEN INVENTORY CONTROL STORE PT ABADI AGROSINDO PERSADA",
+  "short_name": "ICS PT AAP",
+  "description": "Aplikasi Android & Website Manajemen Stok Gudang PT Abadi Agrosindo Persada, Scan Barcode SIV, LPB Supplier, dan Kartu Stok Real-Time",
+  "theme_color": "#0f172a",
+  "background_color": "#0f172a",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/?mode=android",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png?v=2",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png?v=2",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png?v=2",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
