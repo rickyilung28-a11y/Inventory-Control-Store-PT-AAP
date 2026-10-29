@@ -10,6 +10,7 @@ const __dirname = path.dirname(__filename);
 const DATA_DIR = path.join(__dirname, 'data');
 const STATE_FILE = path.join(DATA_DIR, 'shared-inventory-state.json');
 const DEFAULT_STATE_FILE = path.join(DATA_DIR, 'default-inventory-state.json');
+const BUNDLED_SNAPSHOT_FILE = path.join(__dirname, 'src', 'data', 'defaultDatabaseSnapshot.json');
 const SQL_DUMP_FILE = path.join(DATA_DIR, 'store-inventory-database.sql');
 const SQLITE_DB_FILE = path.join(DATA_DIR, 'store-inventory.sqlite');
 const TUNNEL_URL_FILE = path.join(DATA_DIR, 'public-tunnel-url.txt');
@@ -228,25 +229,28 @@ function deduplicateUsers(rawUsers?: Record<string, unknown>[]): Record<string, 
     if (!item || typeof item !== 'object') continue;
     const u = item as { id?: string; username?: string };
     if (!u.id || !u.username) continue;
-    const idKey = String(u.id).trim();
+    const idKey = String(u.id).trim().replace(/staff/gi, 'PIC');
     const unameKey = String(u.username).trim().toLowerCase();
     if (seenIds.has(idKey) || seenUsernames.has(unameKey)) continue;
     seenIds.add(idKey);
     seenUsernames.add(unameKey);
-    result.push(item);
+    result.push({ ...item, id: idKey });
   }
   return result;
 }
 
 function readDefaultState(): SharedServerState | null {
   try {
-    if (fs.existsSync(DEFAULT_STATE_FILE)) {
-      const raw = fs.readFileSync(DEFAULT_STATE_FILE, 'utf-8');
-      const parsed = JSON.parse(raw) as SharedServerState;
-      if (parsed && Array.isArray(parsed.users)) {
-        parsed.users = deduplicateUsers(parsed.users);
+    const candidateFiles = [DEFAULT_STATE_FILE, BUNDLED_SNAPSHOT_FILE];
+    for (const filePath of candidateFiles) {
+      if (fs.existsSync(filePath)) {
+        const raw = fs.readFileSync(filePath, 'utf-8');
+        const parsed = JSON.parse(raw) as SharedServerState;
+        if (parsed && Array.isArray(parsed.users)) {
+          parsed.users = deduplicateUsers(parsed.users);
+        }
+        return parsed;
       }
-      return parsed;
     }
   } catch (err) {
     console.warn('Failed to read default state file:', err);
@@ -527,6 +531,82 @@ async function startServer() {
     });
   });
 
+  app.get('/api/sync/state', (_req, res) => {
+    const state = readSharedState();
+    res.json({
+      revision: state?.version || 1,
+      updatedAt: state?.updatedAt || new Date().toISOString(),
+      lastClientId: 'server',
+      lastDeviceType: 'WEBSITE',
+      lastActionSummary: 'Tersinkronisasi',
+      connectedDevices: [],
+      collections: state || {},
+      data: state || {},
+    });
+  });
+
+  app.get('/api/sync/stream', (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders?.();
+
+    const state = readSharedState();
+    const initPayload = {
+      revision: state?.version || 1,
+      updatedAt: state?.updatedAt || new Date().toISOString(),
+      lastClientId: String(req.query.clientId || 'server'),
+      lastDeviceType: 'WEBSITE',
+      lastActionSummary: 'Tersinkronisasi',
+      connectedDevices: [],
+    };
+    res.write(`event: INIT_STATE\ndata: ${JSON.stringify(initPayload)}\n\n`);
+
+    const keepAlive = setInterval(() => {
+      res.write(': keep-alive\n\n');
+    }, 20000);
+
+    req.on('close', () => {
+      clearInterval(keepAlive);
+    });
+  });
+
+  app.post('/api/sync/push', (req, res) => {
+    const collections = req.body?.collections || req.body || {};
+    const updated = writeSharedState(collections);
+    res.json({
+      success: true,
+      revision: updated.version,
+      updatedAt: updated.updatedAt,
+      connectedDevices: [],
+    });
+  });
+
+  app.post('/api/sync/heartbeat', (_req, res) => {
+    res.json({ success: true });
+  });
+
+  app.post('/api/sync/event', (_req, res) => {
+    res.json({ success: true });
+  });
+
+  app.post('/api/sync/reset', (_req, res) => {
+    const defaultDb = readDefaultState();
+    if (defaultDb) {
+      const restored = writeSharedState({
+        ...defaultDb,
+        updatedAt: new Date().toISOString(),
+      });
+      res.json({
+        success: true,
+        revision: restored.version,
+        updatedAt: restored.updatedAt,
+      });
+      return;
+    }
+    res.json({ success: true });
+  });
+
   app.post('/api/inventory/sync', (req, res) => {
     const payload = req.body || {};
     const updated = writeSharedState({
@@ -538,6 +618,7 @@ async function startServer() {
       costCenters: payload.costCenters,
       glAccounts: payload.glAccounts,
       storageLocations: payload.storageLocations,
+      stockCategories: payload.stockCategories,
       companyProfile: payload.companyProfile,
       minStockProposals: payload.minStockProposals,
       stockOpnameSessions: payload.stockOpnameSessions,

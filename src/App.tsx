@@ -551,17 +551,9 @@ function InventoryAppContent() {
 
       {/* Footer */}
       <footer className="mt-auto w-full border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 text-xs text-slate-500 dark:text-slate-400 no-print transition-colors">
-        <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-5 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+        <div className="w-full px-3 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
           <span>&copy; 2026 PT. Abadi Agrosindo Persada. Sistem Manajemen Store &amp; Inventaris.</span>
           <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-slate-400">
-            <button
-              onClick={() => setIsPublicAccessModalOpen(true)}
-              className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 font-semibold flex items-center gap-1"
-            >
-              <Share2 className="w-3.5 h-3.5" />
-              <span>Link Login Aplikasi</span>
-            </button>
-            <span>&middot;</span>
             <span>
               {isSuperUser
                 ? 'Hierarki Otorisasi Multi-Level & Database SQL Store'

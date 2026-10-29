@@ -1042,8 +1042,8 @@ export const IssueVoucherListView: React.FC<IssueVoucherListViewProps> = ({
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
               {isRequesterUser
-                ? `Menampilkan daftar Nota Pengambilan Barang (SIV) yang diterbitkan oleh Anda (${currentUser.name}). SIV dapat diedit atau dihapus selama belum diverifikasi/di-ACC oleh Admin Gudang.`
-                : 'Pemisahan Wewenang SIV: (1) Pemohon menerbitkan SIV (bisa diedit/dihapus sebelum di-ACC Admin), (2) User Admin Gudang hanya meng-ACC SIV & validasi/scan barcode barang + qty diserahkan (SIV terkunci, stok belum berubah), (3) User Kepala Gudang meng-approve pengurangan stock (otomatis memotong stock sistem).'}
+                ? `Menampilkan daftar Nota Pengambilan Barang (SIV) yang diterbitkan oleh Anda (${currentUser.name}). SIV dapat diedit atau dihapus selama belum di-ACC oleh Kepala Store.`
+                : 'Alur Proses SIV: (1) Pemohon (PIC) menerbitkan SIV, (2) Kepala Store meng-ACC SIV (SIV terkunci, stok belum berkurang), (3) Admin Store menyerahkan barang ke penerima & validasi scan barcode (otomatis mengurangi stok sistem).'}
             </p>
           </div>
 

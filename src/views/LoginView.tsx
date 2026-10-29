@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useInventory } from '../context/InventoryContext';
 import { useTheme } from '../context/ThemeContext';
-import { resolvePermanentLoginUrl, getCachedLockedLoginUrl } from '../utils/loginUrl';
 import {
   Boxes,
   Lock,
@@ -11,9 +10,6 @@ import {
   ShieldCheck,
   ArrowRight,
   AlertCircle,
-  Copy,
-  Check,
-  Share2,
   Sun,
   Moon,
 } from 'lucide-react';
@@ -27,36 +23,6 @@ export const LoginView: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [copiedLoginUrl, setCopiedLoginUrl] = useState(false);
-  const [serverPermanentUrl, setServerPermanentUrl] = useState<string>(() =>
-    getCachedLockedLoginUrl()
-  );
-
-  React.useEffect(() => {
-    fetch('/api/public-url')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data?.permanentUrl || data?.publicUrl) {
-          setServerPermanentUrl(data.permanentUrl || data.publicUrl);
-        }
-      })
-      .catch(() => {});
-  }, []);
-
-  const loginShareUrl = resolvePermanentLoginUrl(
-    serverPermanentUrl,
-    companyProfile?.permanentLoginUrl
-  );
-
-  const handleCopyLoginLink = async () => {
-    try {
-      await navigator.clipboard.writeText(loginShareUrl);
-      setCopiedLoginUrl(true);
-      setTimeout(() => setCopiedLoginUrl(false), 2500);
-    } catch {
-      // ignore
-    }
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -258,55 +224,6 @@ export const LoginView: React.FC = () => {
               </button>
             </div>
           </form>
-
-          {/* Share Permanent Login Link Helper */}
-          <div
-            className={`mt-6 pt-4 border-t space-y-2 text-[11px] ${
-              isDark ? 'border-slate-800/80' : 'border-slate-200'
-            }`}
-          >
-            <div className="flex items-center justify-between gap-2">
-              <div
-                className={`flex items-center gap-1.5 font-semibold ${
-                  isDark ? 'text-slate-300' : 'text-slate-700'
-                }`}
-              >
-                <Share2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                <span>Link Login Tetap (Permanen):</span>
-              </div>
-              <button
-                type="button"
-                onClick={handleCopyLoginLink}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-semibold shrink-0 transition-colors cursor-pointer ${
-                  isDark
-                    ? 'bg-slate-800 hover:bg-slate-700 text-emerald-300 border-slate-700'
-                    : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
-                }`}
-              >
-                {copiedLoginUrl ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>Link Tetap Tersalin</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>Salin Link Tetap</span>
-                  </>
-                )}
-              </button>
-            </div>
-            <div
-              className={`px-2.5 py-1.5 rounded-lg border font-mono text-[10px] truncate select-all ${
-                isDark
-                  ? 'bg-slate-950/90 border-slate-800 text-emerald-400'
-                  : 'bg-slate-50 border-slate-200 text-emerald-700'
-              }`}
-              title={loginShareUrl}
-            >
-              {loginShareUrl}
-            </div>
-          </div>
         </div>
 
         {/* Footer Info */}

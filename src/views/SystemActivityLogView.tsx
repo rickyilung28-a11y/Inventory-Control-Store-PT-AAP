@@ -192,16 +192,20 @@ export const SystemActivityLogView: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
-            <button
-              onClick={handleExportExcel}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-lg transition-colors shadow-2xs"
-              title="Unduh Log Aktivitas Sistem ke file Microsoft Excel (.xlsx) untuk keperluan audit"
-            >
-              <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-              <span>Unduh Log Audit (Excel)</span>
-            </button>
-          </div>
+          {(viewerRole === 'superuser' ||
+            viewerRole === 'kepala_gudang' ||
+            viewerRole === 'admin') && (
+            <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+              <button
+                onClick={handleExportExcel}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-lg transition-colors shadow-2xs"
+                title="Unduh Log Aktivitas Sistem ke file Microsoft Excel (.xlsx) untuk keperluan audit"
+              >
+                <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                <span>Unduh Log Audit (Excel)</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Summary Cards */}

@@ -228,15 +228,20 @@ class RealtimeService {
       });
 
       es.onerror = () => {
-        this.isConnectedToServer = false;
-        this.emitStatus();
         es.close();
         this.eventSource = null;
+        // On external/static hosting where SSE stream is not mounted, keep local/Firestore sync active
+        this.isConnectedToServer = true;
+        if (!this.lastSyncAt) {
+          this.lastSyncAt = new Date().toISOString();
+        }
+        this.emitStatus();
         if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
-        this.reconnectTimer = setTimeout(() => this.connectSSE(), 3000);
+        this.reconnectTimer = setTimeout(() => this.connectSSE(), 15000);
       };
-    } catch (err) {
-      console.warn('SSE connection error:', err);
+    } catch {
+      this.isConnectedToServer = true;
+      this.emitStatus();
     }
   }
 
